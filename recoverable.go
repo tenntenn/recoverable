@@ -3,6 +3,7 @@ package recoverable
 import (
 	"fmt"
 	"runtime"
+	"sync"
 )
 
 type Caller struct {
@@ -116,4 +117,48 @@ func FuncWithErr(f func() error) func() error {
 		}
 		return nil
 	}
+}
+
+// Experimental
+type Group struct {
+	wg sync.WaitGroup
+	m  sync.Map
+}
+
+type Result struct {
+	Value interface{}
+	Error error
+}
+
+func (g *Group) Go(id string, f func() (interface{}, error)) {
+	g.wg.Add(1)
+	go func() {
+		defer func() {
+			g.wg.Done()
+			if r := recover(); r != nil {
+				err := &errRecovered{value: r, callstack: callstack()}
+				g.m.Store(id, &Result{Error: err})
+			}
+		}()
+		v, err := f()
+		g.m.Store(id, &Result{Value: v, Error: err})
+	}()
+}
+
+func (g *Group) Wait() map[string]*Result {
+	g.wg.Wait()
+	m := make(map[string]*Result)
+	g.m.Range(func(key, value interface{}) bool {
+		k, ok := key.(string)
+		if !ok {
+			return true
+		}
+		val, ok := value.(*Result)
+		if !ok {
+			return true
+		}
+		m[k] = val
+		return true
+	})
+	return m
 }
