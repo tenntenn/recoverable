@@ -41,7 +41,7 @@ func (err *errRecovered) Error() string {
 	return fmt.Sprintf("panic with %s", err.value)
 }
 
-func (err *errRecovered) RecoveredValue() interface{} {
+func (err *errRecovered) Recovered() interface{} {
 	return err.value
 }
 
@@ -53,17 +53,17 @@ func (err *errRecovered) CallStack() []*Caller {
 // If the error implements bellow interface,
 // RecoveredValue returns the recovered value and true.
 //     interface {
-//          RecoveredValue() interface{}
+//          Recovered() interface{}
 //     }
-func RecoveredValue(err error) (interface{}, bool) {
+func Recovered(err error) (interface{}, bool) {
 	rerr, ok := err.(interface {
-		RecoveredValue() interface{}
+		Recovered() interface{}
 	})
 
 	if !ok {
 		return nil, false
 	}
-	return rerr.RecoveredValue(), true
+	return rerr.Recovered(), true
 }
 
 // CallStack returns a call stack of paniced function.

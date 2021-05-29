@@ -22,7 +22,7 @@ func ExampleFunc() {
 	eg.Go(f)
 
 	if err := eg.Wait(); err != nil {
-		v, ok := RecoveredValue(err)
+		v, ok := Recovered(err)
 		if ok {
 			panic(v)
 		}
