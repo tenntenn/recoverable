@@ -13,7 +13,7 @@ type Caller struct {
 
 func callstack() []*Caller {
 	var callers []*Caller
-	for skip := 1; ; skip++ {
+	for skip := 3; ; skip++ {
 		pc, file, line, ok := runtime.Caller(skip)
 		if !ok {
 			break
@@ -68,19 +68,20 @@ func Recovered(err error) (interface{}, bool) {
 
 // CallStack returns a call stack of paniced function.
 // If CallStack the error implements bellow interface,
-//  returns the recovered a call stack and true.
+//  returns the recovered a call stack.
 //     interface {
 //          CallStack []*Caller
 //     }
-func CallStack(err error) ([]*Caller, bool) {
+func CallStack(err error) []*Caller {
 	rerr, ok := err.(interface {
 		CallStack() []*Caller
 	})
 
-	if !ok {
-		return nil, false
+	if ok {
+		return rerr.CallStack()
 	}
-	return rerr.CallStack(), true
+
+	return nil
 }
 
 // Func converts the given function to a function

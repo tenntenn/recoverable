@@ -8,12 +8,6 @@ import (
 )
 
 func ExampleFunc() {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("Panic:", r)
-		}
-	}()
-
 	f := Func(func() {
 		panic("example")
 	})
@@ -24,10 +18,27 @@ func ExampleFunc() {
 	if err := eg.Wait(); err != nil {
 		v, ok := Recovered(err)
 		if ok {
-			panic(v)
+			fmt.Println("Panic with", v)
 		}
-		fmt.Println("Error:", err)
 	}
 
-	// Output: Panic: example
+	// Output: Panic with example
+}
+
+func ExampleCallStack() {
+	f := Func(func() {
+		panic("example")
+	})
+
+	var eg errgroup.Group
+	eg.Go(f)
+
+	if err := eg.Wait(); err != nil {
+		callstack := CallStack(err)
+		if len(callstack) >= 1 {
+			fmt.Println(callstack[0].Func().Name())
+		}
+	}
+
+	// Output: github.com/tenntenn/recoverable_test.ExampleCallStack.func1
 }
