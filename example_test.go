@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	. "github.com/tenntenn/recoverable"
-	"golang.org/x/sync/errgroup"
 )
 
 func ExampleFunc() {
@@ -12,10 +11,7 @@ func ExampleFunc() {
 		panic("example")
 	})
 
-	var eg errgroup.Group
-	eg.Go(f)
-
-	if err := eg.Wait(); err != nil {
+	if err := f(); err != nil {
 		v, ok := Recovered(err)
 		if ok {
 			fmt.Println("Panic with", v)
@@ -30,10 +26,7 @@ func ExampleCallStack() {
 		panic("example")
 	})
 
-	var eg errgroup.Group
-	eg.Go(f)
-
-	if err := eg.Wait(); err != nil {
+	if err := f(); err != nil {
 		callstack := CallStack(err)
 		if len(callstack) >= 1 {
 			fmt.Println(callstack[0].Func().Name())

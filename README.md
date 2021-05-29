@@ -6,28 +6,16 @@
 
 ```go
 func example() {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("Panic:", r)
-		}
-	}()
-
 	f := recoverable.Func(func() {
 		panic("example")
 	})
 
-	var eg errgroup.Group
-	eg.Go(f)
-
-	if err := eg.Wait(); err != nil {
+	if err := f(); err != nil {
 		v, ok := recoverable.Recovered(err)
 		if ok {
-			panic(v)
+			fmt.Println("Panic with", v)
 		}
-		fmt.Println("Error:", err)
 	}
-
-	// Output: Panic: example
 }
 ```
 
